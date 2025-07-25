@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: social
+  datasource:
+    url: jdbc:postgresql://localhost:5432/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+server:
+  port: 8000
+  servlet:
+    context-path: /api/v1
