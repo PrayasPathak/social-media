@@ -32,6 +32,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(UnauthorizedActionException.class)
+    public ResponseEntity<ErrorDetails> handleUnauthorizedAction(UnauthorizedActionException ex) {
+        ErrorDetails errorDetails = ErrorDetails.builder()
+                .error(ex.getMessage())
+                .build();
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<ErrorDetails> handleUsernameNotFoundException(UsernameNotFoundException ex) {
         ErrorDetails errorDetails = ErrorDetails.builder()

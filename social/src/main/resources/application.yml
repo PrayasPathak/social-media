@@ -9,6 +9,9 @@ spring:
     hibernate:
       ddl-auto: create
     show-sql: true
+  web:
+    resources:
+      static-locations: classpath:/static/,file:uploads
 server:
   port: 8000
   servlet:
@@ -20,8 +23,8 @@ app:
       secret-key: d6b296e0efeb8c294a3b9ac5b6ac5e3f53a3b21347866cbb11551f87615b34382225a28e9fc146f2ddc6bae813bfa02abb607ae98189b4e84c0bf111b1a39a27
       refresh-token:
         expiration: 604800000
-  logging:
-    level:
-      org:
-        springframework:
-          security: DEBUG
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG

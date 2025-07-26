@@ -1,9 +1,11 @@
 package com.example.social.service.impl;
 
+import com.example.social.entity.Profile;
 import com.example.social.entity.Token;
 import com.example.social.entity.User;
 import com.example.social.exception.ActionNotAllowedException;
 import com.example.social.exception.ResourceNotFoundException;
+import com.example.social.repository.ProfileRepository;
 import com.example.social.repository.RoleRepository;
 import com.example.social.repository.TokenRepository;
 import com.example.social.repository.UserRepository;
@@ -36,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final RoleRepository roleRepository;
     private final TokenRepository tokenRepository;
+    private final ProfileRepository profileRepository;
 
     @Override
     public AuthenticationResponse registerUser(RegistrationRequest request) {
@@ -51,6 +54,12 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         var savedUser = userRepository.save(user);
+        var profile = Profile.builder()
+                .user(savedUser)
+                .bio("")
+                .profilePicture(null)
+                .build();
+        profileRepository.save(profile);
         var claims = new HashMap<String, Object>();
         claims.put("fullName", user.getFullName());
         var jwtToken = jwtService.generateToken(claims, user);
