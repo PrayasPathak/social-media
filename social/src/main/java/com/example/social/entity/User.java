@@ -25,7 +25,15 @@ public class User implements UserDetails {
     private String email;
     @Column(nullable = false)
     private String password;
-    private String bio;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Profile profile;
+
+    @OneToMany(mappedBy = "user")
+    private List<Post> posts;
+
+    @OneToMany(mappedBy = "user")
+    private List<Like> likes;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -34,6 +42,15 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles = new HashSet<>();
+
+    @OneToMany(mappedBy = "follower")
+    private List<Follow> following;
+
+    @OneToMany(mappedBy = "following")
+    private List<Follow> followers;
+
+    @OneToMany(mappedBy = "user")
+    private List<Bookmark> bookmarks;
 
     @OneToMany(mappedBy = "user")
     @Builder.Default
