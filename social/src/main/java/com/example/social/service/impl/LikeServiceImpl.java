@@ -50,7 +50,7 @@ public class LikeServiceImpl implements LikeService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
         Like like = likeRepository.findByUserAndPost(user, post)
-                .orElseThrow(() -> new RuntimeException("Like not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Like not found"));
 
         likeRepository.delete(like);
     }

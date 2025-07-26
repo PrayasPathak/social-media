@@ -10,5 +10,5 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class BookmarkRequest {
     @NotNull(message = "Post id is required")
-    Long postId;
+    private Long postId;
 }

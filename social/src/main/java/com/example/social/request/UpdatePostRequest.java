@@ -10,5 +10,5 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 public class UpdatePostRequest {
     private String caption;
-    MultipartFile media;
+    private MultipartFile media;
 }
