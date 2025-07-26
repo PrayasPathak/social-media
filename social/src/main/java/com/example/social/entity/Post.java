@@ -18,6 +18,7 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String caption;
+    private String mediaUrl;
     private Instant createdAt;
 
     @ManyToOne
