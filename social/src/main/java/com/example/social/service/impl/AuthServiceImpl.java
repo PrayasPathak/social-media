@@ -1,5 +1,7 @@
 package com.example.social.service.impl;
 
+import com.example.social.entity.Token;
+import com.example.social.repository.TokenRepository;
 import com.example.social.response.AuthenticationResponse;
 import com.example.social.entity.User;
 import com.example.social.exception.ActionNotAllowedException;
@@ -27,6 +29,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final RoleRepository roleRepository;
+    private final TokenRepository tokenRepository;
 
     @Override
     public AuthenticationResponse registerUser(RegistrationRequest request) {
@@ -40,11 +43,12 @@ public class AuthServiceImpl implements AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .roles(Set.of(roles))
                 .build();
-        userRepository.save(user);
 
+        var savedUser = userRepository.save(user);
         var claims = new HashMap<String, Object>();
         claims.put("fullName", user.getFullName());
         var jwtToken = jwtService.generateToken(claims, user);
+        saveUserToken(savedUser, jwtToken);
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .status(true)
@@ -55,16 +59,39 @@ public class AuthServiceImpl implements AuthService {
     public AuthenticationResponse login(LoginRequest request) {
         var auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                request.getEmail(),
-                request.getPassword()
-        ));
+                        request.getEmail(),
+                        request.getPassword()
+                ));
         var claims = new HashMap<String, Object>();
         var user = (User) auth.getPrincipal();
         claims.put("fullName", user.getFullName());
         var jwtToken = jwtService.generateToken(claims, user);
+        revokeAllTokens(user);
+        saveUserToken(user, jwtToken);
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .status(true)
                 .build();
+    }
+
+    private void saveUserToken(User user, String jwtToken) {
+        var token = Token.builder()
+                .user(user)
+                .token(jwtToken)
+                .expired(false)
+                .revoked(false)
+                .build();
+        tokenRepository.save(token);
+    }
+
+    private void revokeAllTokens(User user){
+        var validTokens = tokenRepository.findAllValidTokenByUser(user.getId());
+        if(validTokens.isEmpty())
+            return;
+        validTokens.forEach(t -> {
+            t.setRevoked(true);
+            t.setExpired(true);
+        });
+        tokenRepository.saveAll(validTokens);
     }
 }
