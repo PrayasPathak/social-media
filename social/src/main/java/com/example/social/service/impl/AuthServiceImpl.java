@@ -1,23 +1,29 @@
 package com.example.social.service.impl;
 
 import com.example.social.entity.Token;
-import com.example.social.repository.TokenRepository;
-import com.example.social.response.AuthenticationResponse;
 import com.example.social.entity.User;
 import com.example.social.exception.ActionNotAllowedException;
 import com.example.social.exception.ResourceNotFoundException;
 import com.example.social.repository.RoleRepository;
+import com.example.social.repository.TokenRepository;
 import com.example.social.repository.UserRepository;
 import com.example.social.request.LoginRequest;
 import com.example.social.request.RegistrationRequest;
+import com.example.social.response.AuthenticationResponse;
 import com.example.social.security.JwtService;
 import com.example.social.service.AuthService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -48,9 +54,11 @@ public class AuthServiceImpl implements AuthService {
         var claims = new HashMap<String, Object>();
         claims.put("fullName", user.getFullName());
         var jwtToken = jwtService.generateToken(claims, user);
+        var refreshToken = jwtService.generateRefreshToken(user);
         saveUserToken(savedUser, jwtToken);
         return AuthenticationResponse.builder()
-                .token(jwtToken)
+                .accessToken(jwtToken)
+                .refreshToken(refreshToken)
                 .status(true)
                 .build();
     }
@@ -66,12 +74,40 @@ public class AuthServiceImpl implements AuthService {
         var user = (User) auth.getPrincipal();
         claims.put("fullName", user.getFullName());
         var jwtToken = jwtService.generateToken(claims, user);
+        var refreshToken = jwtService.generateToken(user);
         revokeAllTokens(user);
         saveUserToken(user, jwtToken);
         return AuthenticationResponse.builder()
-                .token(jwtToken)
+                .accessToken(jwtToken)
+                .refreshToken(refreshToken)
                 .status(true)
                 .build();
+    }
+
+    @Override
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        final String refreshToken;
+        final String userEmail;
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return;
+        }
+        refreshToken = authHeader.substring(7);
+        userEmail = jwtService.extractUsername(refreshToken);
+        if (userEmail != null) {
+            var user = userRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            if (jwtService.isTokenValid(refreshToken, user)) {
+                var accessToken = jwtService.generateToken(user);
+                revokeAllTokens(user);
+                saveUserToken(user, accessToken);
+                var authResponse = AuthenticationResponse.builder()
+                        .accessToken(accessToken)
+                        .refreshToken(refreshToken)
+                        .status(true).build();
+                new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
+            }
+        }
     }
 
     private void saveUserToken(User user, String jwtToken) {
@@ -84,9 +120,9 @@ public class AuthServiceImpl implements AuthService {
         tokenRepository.save(token);
     }
 
-    private void revokeAllTokens(User user){
+    private void revokeAllTokens(User user) {
         var validTokens = tokenRepository.findAllValidTokenByUser(user.getId());
-        if(validTokens.isEmpty())
+        if (validTokens.isEmpty())
             return;
         validTokens.forEach(t -> {
             t.setRevoked(true);
