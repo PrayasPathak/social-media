@@ -29,17 +29,22 @@ public class LikeServiceImpl implements LikeService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
-        if (likeRepository.findByUserAndPost(user, post).isPresent()) {
-            throw new ActionNotAllowedException("Post already liked by this user");
+
+        Like existingLike = likeRepository.findByUserAndPost(user, post).orElse(null);
+
+        if (existingLike != null) {
+            long likeCount = likeRepository.countByPost(post);
+            return LikeResponse.fromEntity(existingLike, likeCount);
         }
 
-        Like like = Like.builder()
+        Like newLike = Like.builder()
                 .user(user)
                 .post(post)
                 .build();
-        like = likeRepository.save(like);
-        long likeCount = likeRepository.findByPost(post).size();
-        return LikeResponse.fromEntity(like, likeCount);
+
+        likeRepository.save(newLike);
+        long likeCount = likeRepository.countByPost(post);
+        return LikeResponse.fromEntity(newLike, likeCount);
     }
 
     @Override
@@ -49,11 +54,10 @@ public class LikeServiceImpl implements LikeService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
-        Like like = likeRepository.findByUserAndPost(user, post)
-                .orElseThrow(() -> new RuntimeException("Like not found"));
 
-        likeRepository.delete(like);
+        likeRepository.findByUserAndPost(user, post).ifPresent(likeRepository::delete);
     }
+
 
     @Override
     public List<LikeResponse> getLikes(Long postId) {
