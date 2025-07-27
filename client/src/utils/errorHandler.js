@@ -5,33 +5,35 @@ export function parseApiError(error) {
     if (status === 400) {
       if (data.errors) {
         return {
-          type: "validation",
-          details: data.errors,
-          message: data.error,
+          message: data.error || "Invalid input",
+          fieldErrors: data.errors,
+          validationErrors: [],
         };
       }
       if (data.validationErrors) {
         return {
-          type: "validationSet",
-          details: data.validationErrors,
-          message: data.error,
+          message: data.error || "Validation failed",
+          fieldErrors: {},
+          validationErrors: data.validationErrors,
         };
       }
-      return { type: "bad_request", message: data.error || "Bad request" };
+      return {
+        message: data.error || "Bad request",
+        fieldErrors: {},
+        validationErrors: [],
+      };
     }
-    if (status === 401) {
-      return { type: "unauthorized", message: data.error || "Unauthorized" };
-    }
-    if (status === 403) {
-      return { type: "forbidden", message: data.error || "Forbidden" };
-    }
-    if (status === 404) {
-      return { type: "not_found", message: data.error || "Not Found" };
-    }
-    if (status >= 500) {
-      return { type: "server_error", message: data.error || "Server error" };
-    }
+
+    return {
+      message: data.error || "Something went wrong",
+      fieldErrors: {},
+      validationErrors: [],
+    };
   }
 
-  return { type: "unknown", message: error.message || "Unknown error" };
+  return {
+    message: error.message || "Unknown error",
+    fieldErrors: {},
+    validationErrors: [],
+  };
 }
