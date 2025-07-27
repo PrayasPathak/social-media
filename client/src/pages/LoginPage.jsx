@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 import { loginUser } from "@/api/authService";
+import { getProfile } from "@/api/profileService";
 import { setAuthUser } from "@/redux/authSlice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,12 +30,26 @@ const Login = () => {
 
     const { data, error } = await loginUser(input);
 
-    if (data) {
-      toast.success("Logged in successfully");
-      dispatch(setAuthUser(data.accessToken));
-      setInput({ email: "", password: "" });
-      setFieldErrors({});
-      navigate("/");
+    if (data?.accessToken) {
+      localStorage.setItem("access_token", data.accessToken);
+      localStorage.setItem("refresh_token", data.refreshToken);
+
+      try {
+        const { data: profileData, error: profileError } = await getProfile();
+        if (profileData) {
+          dispatch(setAuthUser(profileData));
+          toast.success("Logged in successfully");
+          setInput({ email: "", password: "" });
+          setFieldErrors({});
+          navigate("/");
+        } else {
+          throw new Error(profileError?.message || "Failed to fetch profile");
+        }
+      } catch (err) {
+        toast.error("Error retrieving profile.", err);
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+      }
     }
 
     if (error) {
