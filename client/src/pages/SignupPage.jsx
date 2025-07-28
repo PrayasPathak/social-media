@@ -28,8 +28,8 @@ const Signup = () => {
     setLoading(true);
 
     const { data, error } = await registerUser(input);
-
-    if (data?.status) {
+    console.log("API REsponse: ", { data, error });
+    if (data?.accessToken) {
       toast.success("User registered successfully!");
       setInput({ fullName: "", email: "", password: "" });
       setFieldErrors({});
