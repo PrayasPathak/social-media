@@ -68,7 +68,6 @@ public class AuthServiceImpl implements AuthService {
         return AuthenticationResponse.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
-                .status(true)
                 .build();
     }
 
@@ -89,7 +88,6 @@ public class AuthServiceImpl implements AuthService {
         return AuthenticationResponse.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
-                .status(true)
                 .build();
     }
 
@@ -113,7 +111,7 @@ public class AuthServiceImpl implements AuthService {
                 var authResponse = AuthenticationResponse.builder()
                         .accessToken(accessToken)
                         .refreshToken(refreshToken)
-                        .status(true).build();
+                        .build();
                 new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
             }
         }

@@ -38,4 +38,9 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<UserResponse>> searchUser(@RequestParam("query") String query) {
+        return ResponseEntity.ok(userService.searchUser(query));
+    }
+
 }

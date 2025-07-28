@@ -4,9 +4,7 @@ import lombok.Builder;
 
 @Builder
 public record AuthenticationResponse(
-        String accessToken,
-        boolean status,
-        String refreshToken
-) {
+                String accessToken,
+                String refreshToken) {
 
 }

@@ -19,52 +19,55 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class LikeServiceImpl implements LikeService {
-    private final LikeRepository likeRepository;
-    private final PostRepository postRepository;
-    private final UserRepository userRepository;
+        private final LikeRepository likeRepository;
+        private final PostRepository postRepository;
+        private final UserRepository userRepository;
 
-    @Override
-    public LikeResponse like(long postId, long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
-        if (likeRepository.findByUserAndPost(user, post).isPresent()) {
-            throw new ActionNotAllowedException("Post already liked by this user");
+        @Override
+        public LikeResponse like(long postId, long userId) {
+                User user = userRepository.findById(userId)
+                                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                Post post = postRepository.findById(postId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+
+                Like existingLike = likeRepository.findByUserAndPost(user, post).orElse(null);
+
+                if (existingLike != null) {
+                        long likeCount = likeRepository.countByPost(post);
+                        return LikeResponse.fromEntity(existingLike, likeCount);
+                }
+
+                Like newLike = Like.builder()
+                                .user(user)
+                                .post(post)
+                                .build();
+
+                likeRepository.save(newLike);
+                long likeCount = likeRepository.countByPost(post);
+                return LikeResponse.fromEntity(newLike, likeCount);
         }
 
-        Like like = Like.builder()
-                .user(user)
-                .post(post)
-                .build();
-        like = likeRepository.save(like);
-        long likeCount = likeRepository.findByPost(post).size();
-        return LikeResponse.fromEntity(like, likeCount);
-    }
+        @Override
+        @Transactional
+        public void unlike(long postId, long userId) {
+                User user = userRepository.findById(userId)
+                                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                Post post = postRepository.findById(postId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
-    @Override
-    @Transactional
-    public void unlike(long postId, long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
-        Like like = likeRepository.findByUserAndPost(user, post)
-                .orElseThrow(() -> new ResourceNotFoundException("Like not found"));
+                likeRepository.findByUserAndPost(user, post).ifPresent(likeRepository::delete);
+        }
 
-        likeRepository.delete(like);
-    }
+        @Override
+        public List<LikeResponse> getLikes(Long postId) {
+                Post post = postRepository.findById(postId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
-    @Override
-    public List<LikeResponse> getLikes(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+                List<Like> likes = likeRepository.findByPost(post);
+                long likeCount = likes.size();
 
-        List<Like> likes = likeRepository.findByPost(post);
-        long likeCount = likes.size();
-
-        return likes.stream()
-                .map(like -> LikeResponse.fromEntity(like, likeCount))
-                .toList();
-    }
+                return likes.stream()
+                                .map(like -> LikeResponse.fromEntity(like, likeCount))
+                                .toList();
+        }
 }

@@ -54,6 +54,14 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<UserResponse> searchUser(String query) {
+        return userRepository.findByFullNameContainingIgnoreCase(query)
+                .stream()
+                .map(this::mapToUserResponse)
+                .toList();
+    }
+
     private UserResponse mapToUserResponse(User user) {
         var roles = user.getRoles()
                 .stream()
