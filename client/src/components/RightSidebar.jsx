@@ -5,13 +5,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 const RightSidebar = () => {
   const { user } = useSelector((store) => store.auth);
-  console.log(user);
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
   return (
     <div className="w-fit my-10 pr-32">
       <div className="flex items-center gap-2">
         <Link to={`/profile/${user?.id}`}>
           <Avatar>
-            <AvatarImage src={user?.profilePicture} alt="post_image" />
+            <AvatarImage
+              src={`${BASE_URL}${user?.profilePicture}`}
+              alt="post_image"
+            />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
         </Link>

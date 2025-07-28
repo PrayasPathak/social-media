@@ -15,6 +15,7 @@ const LeftSidebar = () => {
   const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const logoutHandler = async () => {
     try {
@@ -56,7 +57,7 @@ const LeftSidebar = () => {
     {
       icon: (
         <Avatar className="w-6 h-6">
-          <AvatarImage src={user?.profilePicture} alt="@user" />
+          <AvatarImage src={`${BASE_URL}${user?.profilePicture}`} alt="@user" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       ),

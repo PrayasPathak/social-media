@@ -49,6 +49,8 @@ const Post = ({ post }) => {
   const isBookmarked = bookmarks.some((b) => b.postId === post.id);
   const isFollowingAuthor = following.includes(post.userId);
 
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
   // Fetch author info
   useEffect(() => {
     (async () => {
@@ -168,7 +170,9 @@ const Post = ({ post }) => {
       try {
         const fresh = await getUserById(author.id);
         if (fresh?.data) setAuthor(fresh.data);
-      } catch {}
+      } catch (err) {
+        console.log(err);
+      }
     }
     dispatch(setFollowLoading(false));
   };
@@ -220,7 +224,7 @@ const Post = ({ post }) => {
 
       {/* Media */}
       <img
-        src={post.mediaUrl}
+        src={`${BASE_URL}${post.mediaUrl}`}
         alt="post"
         className="w-full aspect-square object-cover rounded-sm my-2"
       />

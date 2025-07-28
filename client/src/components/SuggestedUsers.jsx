@@ -13,6 +13,9 @@ const SuggestedUsers = () => {
   const { user: currentUser } = useSelector((state) => state.auth);
   const { following } = useSelector((state) => state.follow);
   const dispatch = useDispatch();
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+  console.log(users);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -20,7 +23,6 @@ const SuggestedUsers = () => {
       const { data, error } = await getAllUsers();
 
       if (data) {
-        console.log(currentUser);
         const filteredUsers = data.filter((u) => u.id !== currentUser?.id);
         setUsers(filteredUsers);
       } else {
@@ -92,7 +94,10 @@ const SuggestedUsers = () => {
           <div className="flex items-center gap-2">
             <Link to={`/profile/${user.id}`}>
               <Avatar>
-                <AvatarImage src={user.profilePicture} alt="avatar" />
+                <AvatarImage
+                  src={`${BASE_URL}${user.profilePicture}`}
+                  alt="avatar"
+                />
                 <AvatarFallback>
                   {user.username?.slice(0, 2).toUpperCase()}
                 </AvatarFallback>

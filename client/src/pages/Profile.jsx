@@ -52,6 +52,7 @@ const Profile = () => {
   const [followingCount, setFollowingCount] = useState(0);
 
   const isLoggedInUserProfile = !userId || parseInt(userId) === user?.id;
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   // Fetch user profile
   useEffect(() => {
@@ -172,7 +173,7 @@ const Profile = () => {
         {/* HEADER */}
         <div className="grid grid-cols-2 gap-8">
           <Avatar className="h-32 w-32">
-            <AvatarImage src={userProfile?.profilePicture} />
+            <AvatarImage src={`${BASE_URL}${userProfile?.profilePicture}`} />
             <AvatarFallback>GR</AvatarFallback>
           </Avatar>
           <div>
@@ -185,7 +186,7 @@ const Profile = () => {
                 </Link>
                 <Button
                   variant="destructive"
-                  onClick={() => setShowDeleteModal(true)} // Open the modal
+                  onClick={() => setShowDeleteModal(true)}
                 >
                   Delete Account
                 </Button>

@@ -9,9 +9,6 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-  web:
-    resources:
-      static-locations: classpath:/static/,file:uploads
   servlet:
     multipart:
       max-file-size: 50MB

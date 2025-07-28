@@ -9,6 +9,7 @@ function HoverPostCard({ post, isBookmarked, onBookmarkToggle }) {
     comments: null,
   });
   const [hover, setHover] = useState(false);
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     if (!hover) return;
@@ -29,7 +30,7 @@ function HoverPostCard({ post, isBookmarked, onBookmarkToggle }) {
       onMouseLeave={() => setHover(false)}
     >
       <img
-        src={post.mediaUrl}
+        src={`${BASE_URL}${post.mediaUrl}`}
         alt="post"
         className="w-full aspect-square object-cover rounded-sm"
       />
