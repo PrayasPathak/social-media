@@ -27,3 +27,12 @@ export async function updateUser(id, data) {
     return { error: parseApiError(error) };
   }
 }
+
+export async function searchUsers(query) {
+  try {
+    const response = await axiosInstance.get(`/users/search?query=${query}`);
+    return { data: response.data };
+  } catch (error) {
+    return { error: error.response?.data?.message || "Search failed" };
+  }
+}

@@ -33,3 +33,12 @@ export async function deleteProfile() {
     return { error: parseApiError(error) };
   }
 }
+
+export async function getProfileByUserId(userId) {
+  try {
+    const response = await axiosInstance.get(`/profiles/${userId}`);
+    return { data: response.data };
+  } catch (error) {
+    return { error: parseApiError(error) };
+  }
+}

@@ -1,9 +1,9 @@
 import axiosInstance from "./axiosInstance";
 import { parseApiError } from "../utils/errorHandler";
 
-export async function followUser(followingId) {
+export async function followUser(followId) {
   try {
-    const response = await axiosInstance.post("/follow", { followingId });
+    const response = await axiosInstance.post("/follow", { followId });
     return { data: response.data };
   } catch (error) {
     return { error: parseApiError(error) };
@@ -13,7 +13,7 @@ export async function followUser(followingId) {
 export async function unfollowUser(followingId) {
   try {
     await axiosInstance.delete(`/follow/${followingId}`);
-    return { data: "Unfollowed" };
+    return { data: { success: true } };
   } catch (error) {
     return { error: parseApiError(error) };
   }

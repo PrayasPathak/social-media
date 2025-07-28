@@ -36,7 +36,23 @@ export async function refreshToken() {
   }
 }
 
-export function logoutUser() {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
+export async function logoutUser() {
+  try {
+    const refreshToken = localStorage.getItem("refresh_token");
+
+    await axiosInstance.post(
+      "/auth/logout",
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${refreshToken}`,
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Logout failed:", error);
+  } finally {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+  }
 }

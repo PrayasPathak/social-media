@@ -4,7 +4,7 @@ import { parseApiError } from "../utils/errorHandler";
 export async function likePost(postId) {
   try {
     const response = await axiosInstance.post(`/likes/${postId}`);
-    return { data: response.data };
+    return { data: response.data || { success: true } };
   } catch (error) {
     return { error: parseApiError(error) };
   }
@@ -13,7 +13,7 @@ export async function likePost(postId) {
 export async function unlikePost(postId) {
   try {
     await axiosInstance.delete(`/likes/${postId}`);
-    return { data: "Unliked" };
+    return { data: { success: true } };
   } catch (error) {
     return { error: parseApiError(error) };
   }

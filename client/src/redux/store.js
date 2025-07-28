@@ -1,5 +1,11 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import authSlice from "./authSlice.js";
+import postSlice from "./postSlice.js";
+import profileSlice from "./profileSlice.js";
+import commentSlice from "./commentSlice.js";
+import bookmarkSlice from "./bookmarkSlice.js";
+import followSlice from "./followSlice.js";
+import likeSlice from "./likeSlice.js";
 
 import {
   persistReducer,
@@ -20,6 +26,12 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   auth: authSlice,
+  post: postSlice,
+  profile: profileSlice,
+  comment: commentSlice,
+  bookmark: bookmarkSlice,
+  follow: followSlice,
+  like: likeSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
