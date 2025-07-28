@@ -36,3 +36,12 @@ export async function searchUsers(query) {
     return { error: error.response?.data?.message || "Search failed" };
   }
 }
+
+export async function deleteUser() {
+  try {
+    await axiosInstance.delete("/users/me");
+    return { data: "Profile deleted" };
+  } catch (error) {
+    return { error: parseApiError(error) };
+  }
+}
