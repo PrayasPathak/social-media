@@ -77,10 +77,17 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
+    public ProfileResponse getCurrentProfile(Long reqUserId) {
+        Profile profile = profileRepository.findByUserId(reqUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Profile not found for user"));
+
+        return ProfileResponse.fromEntity(profile);
+    }
+
+    @Override
     public ProfileResponse getProfileByUserId(Long userId) {
         Profile profile = profileRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Profile not found for user"));
-
         return ProfileResponse.fromEntity(profile);
     }
 }

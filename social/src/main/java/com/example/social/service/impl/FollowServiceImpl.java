@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,23 +25,37 @@ public class FollowServiceImpl implements FollowService {
 
     @Override
     public FollowResponse follow(FollowRequest request, Long userId) {
-        var follower = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        var following = userRepository.findById(request.getFollowId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        if (followRepository.existsByFollowerAndFollowing(follower, following))
-            throw new ActionNotAllowedException("Already following this user");
-        if (follower.getId().equals(request.getFollowId()))
-            throw new ActionNotAllowedException("You cannot follow self");
+        User follower = userRepository.findById(userId)
+                .orElseThrow(()-> new ResourceNotFoundException("User not found"));
+        User following = userRepository.findById(request.getFollowId())
+                .orElseThrow(()-> new ResourceNotFoundException("User not found"));
 
-        Follow follow = Follow.builder()
-                .follower(follower)
-                .following(following)
-                .followedAt(Instant.now())
-                .build();
-        follow = followRepository.save(follow);
-        return new FollowResponse(follow.getId(), follower.getId(), following.getId());
+        if (follower.getId().equals(request.getFollowId())) {
+            throw new ActionNotAllowedException("You cannot follow yourself");
+        }
+
+        Optional<Follow> existing =
+                followRepository.findByFollowerAndFollowing(follower, following);
+
+        if (existing.isPresent()) {
+            return new FollowResponse(
+                    existing.get().getId(),
+                    follower.getId(),
+                    following.getId()
+            );
+        }
+
+        Follow newFollow = followRepository.save(
+                Follow.builder()
+                        .follower(follower).following(following)
+                        .followedAt(Instant.now())
+                        .build()
+        );
+
+        return new FollowResponse(newFollow.getId(),
+                follower.getId(), following.getId());
     }
+
 
     @Override
     @Transactional
@@ -49,7 +64,8 @@ public class FollowServiceImpl implements FollowService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         var following = userRepository.findById(followingId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        followRepository.deleteByFollowerAndFollowing(follower, following);
+        followRepository.findByFollowerAndFollowing(follower, following)
+                .ifPresent(followRepository::delete);
     }
 
     @Override

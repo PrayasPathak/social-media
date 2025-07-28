@@ -8,5 +8,7 @@ public interface ProfileService {
 
     void deleteProfile(Long userId);
 
+    ProfileResponse getCurrentProfile(Long reqUserId);
+
     ProfileResponse getProfileByUserId(Long userId);
 }

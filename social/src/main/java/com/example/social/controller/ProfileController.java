@@ -31,6 +31,11 @@ public class ProfileController {
 
     @GetMapping("/me")
     public ResponseEntity<ProfileResponse> getProfile(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(profileService.getProfileByUserId(user.getId()));
+        return ResponseEntity.ok(profileService.getCurrentProfile(user.getId()));
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<ProfileResponse> getUserProfile(@PathVariable Long userId){
+        return ResponseEntity.ok(profileService.getProfileByUserId(userId));
     }
 }
