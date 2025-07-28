@@ -62,6 +62,13 @@ public class UserServiceImpl implements UserService {
                 .toList();
     }
 
+    @Override
+    public void deleteUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        userRepository.delete(user);
+    }
+
     private UserResponse mapToUserResponse(User user) {
         var roles = user.getRoles()
                 .stream()

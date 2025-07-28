@@ -43,4 +43,9 @@ public class UserController {
         return ResponseEntity.ok(userService.searchUser(query));
     }
 
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteProfile(@AuthenticationPrincipal User user) {
+        userService.deleteUser(user.getId());
+        return ResponseEntity.noContent().build();
+    }
 }

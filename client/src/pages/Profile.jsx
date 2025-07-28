@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button";
 import { AtSign } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
-
 import {
   bookmarkPost,
   getUserBookmarks,
@@ -29,12 +28,17 @@ import {
 } from "@/redux/profileSlice";
 import { getFollowers, getFollowing } from "@/api/followService";
 import { toast } from "sonner";
+import { deleteUser } from "@/api/userService";
+import { clearAuth } from "@/redux/authSlice";
 
 const Profile = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { userId } = useParams();
   const [activeTab, setActiveTab] = useState("posts");
   const [profileUser, setProfileUser] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const {
     profile: userProfile,
@@ -139,6 +143,25 @@ const Profile = () => {
     dispatch(toggleBookmarkByPostId(postId));
   };
 
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      const { data, error } = await deleteUser();
+      if (data) {
+        toast.success("Account deleted successfully");
+        dispatch(clearAuth());
+        navigate("/login");
+      } else {
+        toast.error(error || "Failed to delete account");
+      }
+    } catch (error) {
+      toast.error(error.message || "Error deleting account");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
+
   if (loading) return <p className="text-center py-10">Loading profile...</p>;
   if (error)
     return <p className="text-center text-red-500 py-10">{error.message}</p>;
@@ -160,7 +183,12 @@ const Profile = () => {
                 <Link to="/account/edit">
                   <Button>Edit profile</Button>
                 </Link>
-                <Button variant="destructive">Delete Account</Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowDeleteModal(true)} // Open the modal
+                >
+                  Delete Account
+                </Button>
               </div>
             )}
 
@@ -242,6 +270,27 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Account Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-md shadow-lg w-96">
+            <h2 className="text-xl mb-4">
+              Are you sure you want to delete your account?
+            </h2>
+            <div className="flex justify-end gap-4">
+              <Button onClick={() => setShowDeleteModal(false)}>Cancel</Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteAccount}
+                disabled={isDeleting} // Disable button while deleting
+              >
+                {isDeleting ? "Deleting..." : "Confirm Delete"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
