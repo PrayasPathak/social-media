@@ -63,6 +63,7 @@ const Post = ({ post }) => {
 
   // Fetch likes & comments
   useEffect(() => {
+    if (!user?.id || !post?.id) return;
     (async () => {
       if (!post?.id) return;
       try {

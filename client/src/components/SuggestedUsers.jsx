@@ -6,10 +6,12 @@ import { getAllUsers } from "@/api/userService";
 import { followUser, unfollowUser } from "@/api/followService";
 import { followUserSuccess, unfollowUserSuccess } from "@/redux/followSlice";
 import { toast } from "sonner";
+import UserListModal from "./UserListModal"; // Import the new modal
 
 const SuggestedUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false); // New state to control the modal visibility
   const { user: currentUser } = useSelector((state) => state.auth);
   const { following } = useSelector((state) => state.follow);
   const dispatch = useDispatch();
@@ -20,7 +22,6 @@ const SuggestedUsers = () => {
       const { data, error } = await getAllUsers();
 
       if (data) {
-        console.log(currentUser);
         const filteredUsers = data.filter((u) => u.id !== currentUser?.id);
         setUsers(filteredUsers);
       } else {
@@ -84,7 +85,12 @@ const SuggestedUsers = () => {
     <div className="my-10">
       <div className="flex items-center justify-between text-sm gap-3">
         <h1 className="font-semibold text-gray-600">Suggested for you</h1>
-        <span className="font-medium cursor-pointer">See All</span>
+        <span
+          className="font-medium cursor-pointer"
+          onClick={() => setIsModalOpen(true)} // Open the modal when "See All" is clicked
+        >
+          See All
+        </span>
       </div>
 
       {users.map((user) => (
@@ -120,6 +126,10 @@ const SuggestedUsers = () => {
           </div>
         </div>
       ))}
+
+      {isModalOpen && (
+        <UserListModal users={users} onClose={() => setIsModalOpen(false)} />
+      )}
     </div>
   );
 };
