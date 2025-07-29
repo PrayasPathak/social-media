@@ -48,9 +48,9 @@ const ProfilePosts = ({
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4 min-h-[300px]">
           {displayedPost.length === 0 ? (
-            <p className="col-span-3 py-10 text-center text-gray-500">
+            <p className="col-span-full py-10 text-center text-gray-500">
               {activeTab === "posts" ? "No posts yet." : "No bookmarks found."}
             </p>
           ) : (

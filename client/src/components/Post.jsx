@@ -77,8 +77,11 @@ const Post = ({ post }) => {
           getCommentsByPost(post.id),
         ]);
         if (Array.isArray(likesRes.data)) {
-          setPostLike(likesRes.data.length);
-          setLiked(likesRes.data.includes(user.id));
+          setPostLike(likesRes.data[0]?.likeCount || 0);
+          const likedByUser = likesRes.data.some(
+            (like) => like.userId === user.id && like.postId === post.id
+          );
+          setLiked(likedByUser);
         }
         if (Array.isArray(commentsRes.data)) {
           setComment(commentsRes.data);
@@ -90,25 +93,15 @@ const Post = ({ post }) => {
   }, [post.id, user.id]);
 
   const handleLikeToggle = async () => {
-    const originalLikes = Array.isArray(post.likes) ? post.likes : [];
     const nextLiked = !liked;
-
     setLiked(nextLiked);
-    setPostLike((c) => c + (nextLiked ? 1 : -1));
-    dispatch(
-      updatePost({
-        ...post,
-        likes: nextLiked
-          ? [...originalLikes, user.id]
-          : originalLikes.filter((id) => id !== user.id),
-      })
-    );
+    setPostLike((count) => count + (nextLiked ? 1 : -1));
 
     const res = nextLiked ? await likePost(post.id) : await unlikePost(post.id);
+
     if (res?.error) {
       setLiked(!nextLiked);
-      setPostLike((c) => c - (nextLiked ? 1 : -1));
-      dispatch(updatePost(post));
+      setPostLike((count) => count - (nextLiked ? 1 : -1));
       toast.error(res.error || "Failed to update like");
     } else {
       toast.success(nextLiked ? "Liked" : "Unliked");

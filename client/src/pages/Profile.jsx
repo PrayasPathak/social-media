@@ -168,8 +168,8 @@ const Profile = () => {
     return <p className="text-center text-red-500 py-10">{error.message}</p>;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex flex-col lg:flex-row gap-10">
+    <div className="mx-auto w-full lg:w-2/3 max-w-screen-xl px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex flex-col lg:flex-row gap-10 justify-center">
         <div className="flex flex-col items-center">
           <ProfileInfo
             BASE_URL={BASE_URL}

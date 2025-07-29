@@ -11,30 +11,31 @@ function HoverPostCard({ post, isBookmarked, onBookmarkToggle }) {
   const [showModal, setShowModal] = useState(false);
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+  // Fetch stats on hover
   useEffect(() => {
     if (!hover || fetched) return;
+    refreshPostStats();
+  }, [hover, fetched]);
 
-    (async () => {
-      try {
-        const [likesRes, commentsRes] = await Promise.all([
-          getLikes(post.id),
-          getCommentsByPost(post.id),
-        ]);
-        setData({
-          likes: Array.isArray(likesRes.data) ? likesRes.data.length : 0,
-          comments: Array.isArray(commentsRes.data)
-            ? commentsRes.data.length
-            : 0,
-        });
-        setFetched(true);
-      } catch (error) {
-        console.error("Failed to fetch post stats:", error);
-      }
-    })();
-  }, [hover, post.id, fetched]);
+  const refreshPostStats = async () => {
+    try {
+      const [likesRes, commentsRes] = await Promise.all([
+        getLikes(post.id),
+        getCommentsByPost(post.id),
+      ]);
+      setData({
+        likes: Array.isArray(likesRes.data) ? likesRes.data.length : 0,
+        comments: Array.isArray(commentsRes.data) ? commentsRes.data.length : 0,
+      });
+      setFetched(true);
+    } catch (error) {
+      console.error("Failed to fetch post stats:", error);
+    }
+  };
 
-  const handleCardClick = () => {
-    setShowModal(true);
+  const handleModalClose = async () => {
+    setShowModal(false);
+    await refreshPostStats();
   };
 
   return (
@@ -43,7 +44,7 @@ function HoverPostCard({ post, isBookmarked, onBookmarkToggle }) {
         className="relative group cursor-pointer"
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
-        onClick={handleCardClick} // ✅ open modal
+        onClick={() => setShowModal(true)}
       >
         <img
           src={`${BASE_URL}${post.mediaUrl}`}
@@ -70,29 +71,25 @@ function HoverPostCard({ post, isBookmarked, onBookmarkToggle }) {
                   <span className="animate-pulse">...</span>
                 )}
               </span>
+              <button
+                className="p-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onBookmarkToggle();
+                }}
+              >
+                {isBookmarked ? (
+                  <BookmarkCheck size={20} />
+                ) : (
+                  <Bookmark size={20} />
+                )}
+              </button>
             </div>
-
-            <button
-              className="p-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                onBookmarkToggle();
-              }}
-            >
-              {isBookmarked ? (
-                <BookmarkCheck size={20} />
-              ) : (
-                <Bookmark size={20} />
-              )}
-            </button>
           </div>
         )}
       </div>
 
-      {/* Modal  */}
-      {showModal && (
-        <PostModal post={post} onClose={() => setShowModal(false)} />
-      )}
+      {showModal && <PostModal post={post} onClose={handleModalClose} />}
     </>
   );
 }

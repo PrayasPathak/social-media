@@ -1,4 +1,4 @@
-import { getLikes } from "@/api/likeService";
+import { getLikes, likePost, unlikePost } from "@/api/likeService";
 import { deletePost } from "@/api/postService";
 import { getUserById } from "@/api/userService";
 import {
@@ -13,44 +13,40 @@ import { useDispatch, useSelector } from "react-redux";
 function PostModal({ post, onClose }) {
   const dispatch = useDispatch();
 
-  const [likes, setLikes] = useState(0);
-  const [newComment, setNewComment] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { user } = useSelector((state) => state.auth);
-  const [error, setError] = useState("");
-
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
+  const { user } = useSelector((state) => state.auth);
   const currentUserId = user?.id;
   const isAuthor = post.userId === currentUserId;
+
+  const [likes, setLikes] = useState(0);
+  const [likedByUser, setLikedByUser] = useState(false);
+  const [newComment, setNewComment] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [commentUsers, setCommentUsers] = useState({});
 
   const comments = useSelector(
     (state) => state.comment.commentsByPost[post.id] || []
   );
 
-  // State to store users info keyed by userId
-  const [commentUsers, setCommentUsers] = useState({});
-
   useEffect(() => {
-    const fetchLikesCommentsAndUsers = async () => {
+    const fetchData = async () => {
       setError("");
-      // Fetch likes
+
       const likesRes = await getLikes(post.id);
       if (likesRes.error) {
         setError("Failed to load likes");
       } else {
-        setLikes(Array.isArray(likesRes.data) ? likesRes.data.length : 0);
+        const data = likesRes.data || [];
+        setLikes(data.length);
+        setLikedByUser(data.some((like) => like.userId === currentUserId));
       }
 
-      // Fetch comments
       await fetchCommentsForPost(dispatch, post.id);
 
-      // After comments fetched, fetch user info for commenters
       const uniqueUserIds = [
         ...new Set(comments.map((comment) => comment.userId)),
       ];
-
-      // Filter out already fetched users
       const newUserIds = uniqueUserIds.filter((id) => !commentUsers[id]);
 
       if (newUserIds.length > 0) {
@@ -69,10 +65,9 @@ function PostModal({ post, onClose }) {
       }
     };
 
-    fetchLikesCommentsAndUsers();
+    fetchData();
   }, [dispatch, post.id, comments.length]);
 
-  // Add comment handler
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
 
@@ -81,7 +76,7 @@ function PostModal({ post, onClose }) {
 
     try {
       await createCommentForPost(dispatch, post.id, newComment.trim());
-      setNewComment(""); // Clear input
+      setNewComment("");
     } catch (err) {
       setError("Failed to add comment.");
     } finally {
@@ -89,7 +84,6 @@ function PostModal({ post, onClose }) {
     }
   };
 
-  // Delete post handler
   const handleDeletePost = async () => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this post?"
@@ -108,19 +102,39 @@ function PostModal({ post, onClose }) {
     }
   };
 
+  const toggleLike = async () => {
+    if (!currentUserId) return;
+
+    if (likedByUser) {
+      const { error } = await unlikePost(post.id);
+      if (!error) {
+        setLikes((prev) => prev - 1);
+        setLikedByUser(false);
+      }
+    } else {
+      const { error } = await likePost(post.id);
+      if (!error) {
+        setLikes((prev) => prev + 1);
+        setLikedByUser(true);
+      }
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white w-[90%] max-w-2xl rounded-lg overflow-hidden shadow-xl">
-        <div className="relative flex h-[500px]">
+        <div className="flex flex-col md:flex-row h-full md:h-[500px]">
           {/* Post Image */}
-          <img
-            src={`${BASE_URL}${post.mediaUrl}`}
-            alt="post"
-            className="w-1/2 object-cover"
-          />
+          <div className="w-full md:w-1/2 flex justify-center items-center bg-gray-100">
+            <img
+              src={`${BASE_URL}${post.mediaUrl}`}
+              alt="post"
+              className="object-contain max-w-full max-h-[500px] w-auto h-auto rounded-sm"
+            />
+          </div>
 
           {/* Content */}
-          <div className="w-1/2 p-4 flex flex-col relative">
+          <div className="w-full md:w-1/2 p-4 flex flex-col relative">
             {/* Top-right Controls */}
             <div className="absolute top-2 right-2 flex gap-2">
               {isAuthor && (
@@ -143,9 +157,14 @@ function PostModal({ post, onClose }) {
 
             {/* Stats */}
             <div className="flex gap-4 mb-3 items-center mt-6">
-              <span className="flex items-center gap-1 text-red-500 text-sm">
+              <button
+                onClick={toggleLike}
+                className={`flex items-center gap-1 text-sm ${
+                  likedByUser ? "text-red-500" : "text-gray-400"
+                }`}
+              >
                 <Heart size={18} /> {likes}
-              </span>
+              </button>
               <span className="flex items-center gap-1 text-blue-500 text-sm">
                 <MessageCircle size={18} /> {comments.length}
               </span>
@@ -154,7 +173,9 @@ function PostModal({ post, onClose }) {
             {/* Comments List */}
             <div className="flex-1 overflow-y-auto border-t pt-2 pr-1 space-y-3 mb-3">
               {comments.map((comment) => {
-                const commenter = comment.user;
+                const commenter =
+                  comment.user || commentUsers[comment.userId] || {};
+
                 return (
                   <div
                     key={comment.id}
@@ -190,7 +211,7 @@ function PostModal({ post, onClose }) {
             </div>
 
             {/* Comment Input */}
-            <div className="flex gap-2 mt-auto">
+            <div className="flex flex-col md:flex-row gap-2 mt-auto">
               <input
                 type="text"
                 placeholder="Add a comment..."
