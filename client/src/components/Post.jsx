@@ -34,6 +34,7 @@ import {
 
 import { bookmarkPost, removeBookmark } from "@/api/bookmarkService";
 import { Link } from "react-router-dom";
+import EditPost from "./EditPost";
 
 const Post = ({ post }) => {
   const dispatch = useDispatch();
@@ -47,6 +48,7 @@ const Post = ({ post }) => {
   const [liked, setLiked] = useState(false);
   const [postLike, setPostLike] = useState(0);
   const [comment, setComment] = useState([]);
+  const [editOpen, setEditOpen] = useState(false);
 
   const isBookmarked = bookmarks.some((b) => b.postId === post.id);
   const isFollowingAuthor = following.includes(post.userId);
@@ -237,13 +239,22 @@ const Post = ({ post }) => {
               </Button>
             )}
             {user.id === author.id && (
-              <Button
-                variant="ghost"
-                className="hover:bg-red-600 hover:text-white cursor-pointer"
-                onClick={handleDeletePost}
-              >
-                Delete
-              </Button>
+              <>
+                <Button
+                  variant="ghost"
+                  className="hover:bg-red-600 hover:text-white cursor-pointer"
+                  onClick={handleDeletePost}
+                >
+                  Delete
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="hover:bg-blue-600 hover:text-white cursor-pointer"
+                  onClick={() => setEditOpen(true)}
+                >
+                  Edit
+                </Button>
+              </>
             )}
           </DialogContent>
         </Dialog>
@@ -326,6 +337,8 @@ const Post = ({ post }) => {
           </span>
         )}
       </div>
+
+      <EditPost open={editOpen} setOpen={setEditOpen} post={post} />
     </div>
   );
 };
