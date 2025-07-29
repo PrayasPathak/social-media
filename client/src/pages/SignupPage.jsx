@@ -29,21 +29,17 @@ const Signup = () => {
 
     const { data, error } = await registerUser(input);
 
-    if (data?.status) {
+    if (data?.accessToken) {
       toast.success("User registered successfully!");
       setInput({ fullName: "", email: "", password: "" });
       setFieldErrors({});
       navigate("/login");
     } else if (error) {
-      // Show general error message toast
       if (error.message) toast.error(error.message);
 
-      // Show all validation error messages as toasts
       if (error.validationErrors?.length) {
         error.validationErrors.forEach((msg) => toast.error(msg));
       }
-
-      // Set field level errors to show inline errors
       if (error.fieldErrors) {
         setFieldErrors(error.fieldErrors);
       }

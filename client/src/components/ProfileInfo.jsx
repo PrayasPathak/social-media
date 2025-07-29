@@ -51,15 +51,21 @@ const ProfileInfo = ({
         </div>
       </div>
 
-      <p className="mt-4">{userProfile?.bio || "No bio yet."}</p>
+      <p className="mt-4 flex flex-col">
+        <span className="font-semibold">Bio: </span>
+        <span className="ml-2">{userProfile?.bio || "No bio yet."}</span>
+      </p>
 
-      <Badge variant="secondary" className="mt-2 inline-flex items-center">
-        <AtSign />
-        <span className="ml-1">{profileUser?.fullName}</span>
-      </Badge>
+      <p className="font-semibold">
+        FullName
+        <Badge variant="secondary" className="mt-2 inline-flex items-center">
+          <AtSign />
+          <span className="ml-1">{profileUser?.fullName}</span>
+        </Badge>
+      </p>
 
       <p className="mt-1 text-sm">
-        <strong>Email:</strong> {profileUser?.email}
+        <strong>Email</strong> {profileUser?.email}
       </p>
     </div>
   );
