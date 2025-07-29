@@ -21,6 +21,7 @@ const CreatePost = ({ open, setOpen }) => {
   const [loading, setLoading] = useState(false);
   const { user } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const fileChangeHandler = async (e) => {
     const file = e.target.files?.[0];
@@ -69,7 +70,7 @@ const CreatePost = ({ open, setOpen }) => {
 
         <div className="flex gap-3 items-center">
           <Avatar>
-            <AvatarImage src={user?.profilePicture} alt="img" />
+            <AvatarImage src={`${BASE_URL}${user?.profilePicture}`} alt="img" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
           <div>

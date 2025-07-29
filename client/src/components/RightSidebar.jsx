@@ -8,7 +8,7 @@ const RightSidebar = () => {
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   return (
-    <div className="w-fit my-10 pr-32">
+    <div className="hidden md:block w-fit my-10 pr-32 md:w-1/3">
       <div className="flex items-center gap-2">
         <Link to={`/profile/${user?.id}`}>
           <Avatar>

@@ -1,24 +1,20 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { AtSign } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Link, useParams, useNavigate } from "react-router-dom";
-import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import {
   bookmarkPost,
   getUserBookmarks,
   removeBookmark,
 } from "@/api/bookmarkService";
+import { getFollowers, getFollowing } from "@/api/followService";
 import { getAllPosts } from "@/api/postService";
 import { getProfile, getProfileByUserId } from "@/api/profileService";
-import { getUserById } from "@/api/userService";
+import { deleteUser, getUserById } from "@/api/userService";
 import HoverPostCard from "@/components/HoverPostCard";
+import { Button } from "@/components/ui/button";
+import { clearAuth } from "@/redux/authSlice";
 import {
-  setError as setBookmarkError,
-  setLoading as setBookmarkLoading,
   setBookmarks,
   toggleBookmarkByPostId,
+  setLoading as setBookmarkLoading,
+  setError as setBookmarkError,
 } from "@/redux/bookmarkSlice";
 import { setPostError, setPostLoading, setPosts } from "@/redux/postSlice";
 import {
@@ -26,10 +22,12 @@ import {
   setProfileError,
   setProfileLoading,
 } from "@/redux/profileSlice";
-import { getFollowers, getFollowing } from "@/api/followService";
+import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { AtSign, Badge } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { deleteUser } from "@/api/userService";
-import { clearAuth } from "@/redux/authSlice";
 
 const Profile = () => {
   const dispatch = useDispatch();
@@ -168,106 +166,107 @@ const Profile = () => {
     return <p className="text-center text-red-500 py-10">{error.message}</p>;
 
   return (
-    <div className="mx-auto max-w-5xl flex justify-center pl-10">
-      <div className="flex flex-col gap-20 p-8">
-        {/* HEADER */}
-        <div className="grid grid-cols-2 gap-8">
-          <Avatar className="h-32 w-32">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex flex-col lg:flex-row gap-10">
+        {/* Profile Info Section */}
+        <div className="lg:w-1/3 flex flex-col items-center lg:items-start">
+          <Avatar className="h-32 w-32 mb-4">
             <AvatarImage src={`${BASE_URL}${userProfile?.profilePicture}`} />
             <AvatarFallback>GR</AvatarFallback>
           </Avatar>
-          <div>
-            <h1 className="text-2xl">{profileUser?.fullName || "Unnamed"}</h1>
 
-            {isLoggedInUserProfile && (
-              <div className="mt-2 flex gap-2">
-                <Link to="/account/edit">
-                  <Button>Edit profile</Button>
-                </Link>
-                <Button
-                  variant="destructive"
-                  onClick={() => setShowDeleteModal(true)}
-                >
-                  Delete Account
-                </Button>
-              </div>
-            )}
+          <h1 className="text-2xl font-bold">
+            {profileUser?.fullName || "Unnamed"}
+          </h1>
 
-            <div className="mt-3 flex gap-6">
-              <div>
-                <strong>
-                  {
-                    allPosts.filter((p) => p.userId === userProfile?.userId)
-                      .length
-                  }
-                </strong>{" "}
-                posts
-              </div>
-              <div>
-                <strong>{followerCount}</strong> followers
-              </div>
-              <div>
-                <strong>{followingCount}</strong> following
-              </div>
+          {isLoggedInUserProfile && (
+            <div className="mt-4 flex gap-2">
+              <Link to="/account/edit">
+                <Button>Edit profile</Button>
+              </Link>
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteModal(true)}
+              >
+                Delete Account
+              </Button>
             </div>
+          )}
 
-            <p className="mt-4">{userProfile?.bio || "No bio yet."}</p>
-
-            <Badge
-              variant="secondary"
-              className="mt-2 inline-flex items-center"
-            >
-              <AtSign />
-              <span className="ml-1">{profileUser?.fullName}</span>
-            </Badge>
-
-            <p className="mt-1 text-sm">
-              <strong>Email:</strong> {profileUser?.email}
-            </p>
+          <div className="mt-4 text-center lg:text-left flex gap-6">
+            <div>
+              <strong>
+                {
+                  allPosts.filter((p) => p.userId === userProfile?.userId)
+                    .length
+                }
+              </strong>{" "}
+              posts
+            </div>
+            <div>
+              <strong>{followerCount}</strong> followers
+            </div>
+            <div>
+              <strong>{followingCount}</strong> following
+            </div>
           </div>
+
+          <p className="mt-4">{userProfile?.bio || "No bio yet."}</p>
+
+          <Badge variant="secondary" className="mt-2 inline-flex items-center">
+            <AtSign />
+            <span className="ml-1">{profileUser?.fullName}</span>
+          </Badge>
+
+          <p className="mt-1 text-sm">
+            <strong>Email:</strong> {profileUser?.email}
+          </p>
         </div>
 
-        {/* TABS */}
-        <div className="border-t border-gray-200 pt-4">
-          <div className="flex justify-center gap-10 text-sm">
-            <span
-              className={`cursor-pointer py-3 ${
-                activeTab === "posts" ? "font-bold" : ""
-              }`}
-              onClick={() => setActiveTab("posts")}
-            >
-              POSTS
-            </span>
-
-            {isLoggedInUserProfile && (
+        {/* Posts Section */}
+        <div className="lg:w-2/3">
+          {/* TABS */}
+          <div className="border-t border-gray-200 pt-4">
+            <div className="flex justify-center gap-10 text-sm">
               <span
                 className={`cursor-pointer py-3 ${
-                  activeTab === "saved" ? "font-bold" : ""
+                  activeTab === "posts" ? "font-bold" : ""
                 }`}
-                onClick={() => setActiveTab("saved")}
+                onClick={() => setActiveTab("posts")}
               >
-                SAVED
+                POSTS
               </span>
-            )}
-          </div>
 
-          <div className="grid grid-cols-3 gap-1 mt-4">
-            {displayedPost.length === 0 ? (
-              <p className="col-span-3 py-10 text-center text-gray-500">
-                {activeTab === "posts"
-                  ? "No posts yet."
-                  : "No bookmarks found."}
-              </p>
-            ) : (
-              displayedPost.map((post) => (
-                <HoverPostCard
-                  key={post.id}
-                  post={post}
-                  isBookmarked={bookmarks.some((b) => b.postId === post.id)}
-                  onBookmarkToggle={() => handleToggleBookmark(post.id)}
-                />
-              ))
-            )}
+              {isLoggedInUserProfile && (
+                <span
+                  className={`cursor-pointer py-3 ${
+                    activeTab === "saved" ? "font-bold" : ""
+                  }`}
+                  onClick={() => setActiveTab("saved")}
+                >
+                  SAVED
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+              {displayedPost.length === 0 ? (
+                <p className="col-span-3 py-10 text-center text-gray-500">
+                  {activeTab === "posts"
+                    ? "No posts yet."
+                    : "No bookmarks found."}
+                </p>
+              ) : (
+                displayedPost.map((post) => (
+                  <HoverPostCard
+                    key={post.id}
+                    post={post}
+                    isBookmarked={bookmarks.some((b) => b.postId === post.id)}
+                    onBookmarkToggle={() => handleToggleBookmark(post.id)}
+                  />
+                ))
+              )}
+            </div>
           </div>
         </div>
       </div>
