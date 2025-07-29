@@ -74,12 +74,13 @@ public class UserServiceImpl implements UserService {
                 .stream()
                 .map(Role::getName)
                 .collect(Collectors.toSet());
-
+        var profilePicture = user.getProfile() != null ? user.getProfile().getProfilePicture() : null;
         return new UserResponse(
                 user.getId(),
                 user.getFullName(),
                 user.getEmail(),
-                roles
+                roles,
+                profilePicture
         );
     }
 }

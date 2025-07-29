@@ -1,12 +1,11 @@
 package com.example.social.response;
 
-import java.util.Set;
+import lombok.Builder;
 
-public record UserResponse(
+@Builder
+public record UserComment(
         Long id,
         String fullName,
-        String email,
-        Set<String> roles,
         String profilePicture
 ) {
 }

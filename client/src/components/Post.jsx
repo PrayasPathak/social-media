@@ -16,22 +16,23 @@ import { followUser, unfollowUser } from "@/api/followService";
 import { getLikes, likePost, unlikePost } from "@/api/likeService";
 import { getUserById } from "@/api/userService";
 
+import { toggleBookmarkByPostId } from "@/redux/bookmarkSlice";
 import {
   deletePost,
   setPostError,
   setPostLoading,
   updatePost,
 } from "@/redux/postSlice";
-import { toggleBookmarkByPostId } from "@/redux/bookmarkSlice";
 
 import {
   followUserSuccess,
-  unfollowUserSuccess,
   setFollowError,
   setFollowLoading,
+  unfollowUserSuccess,
 } from "@/redux/followSlice";
 
 import { bookmarkPost, removeBookmark } from "@/api/bookmarkService";
+import { Link } from "react-router-dom";
 
 const Post = ({ post }) => {
   const dispatch = useDispatch();
@@ -186,13 +187,15 @@ const Post = ({ post }) => {
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Avatar>
-            <AvatarImage src={author.profilePicture} />
+            <AvatarImage src={`${BASE_URL}${author.profilePicture}`} />
             <AvatarFallback>
               {author.username?.[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex items-center gap-3">
-            <h1>{author.username}</h1>
+            <Link to={`/profile/${author.id}`}>
+              <h1>{author.fullName}</h1>
+            </Link>
             {user.id === author.id && <Badge variant="secondary">Author</Badge>}
           </div>
         </div>
@@ -266,7 +269,7 @@ const Post = ({ post }) => {
       <span className="font-medium block mb-2">{postLike} likes</span>
 
       <p>
-        <span className="font-medium mr-2">{author.username}</span>
+        <span className="font-medium mr-2">{author.fullName}</span>
         {post.caption}
       </p>
 

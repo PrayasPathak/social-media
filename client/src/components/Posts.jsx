@@ -16,6 +16,7 @@ const Posts = () => {
         dispatch(setPosts(res.data));
       } else {
         dispatch(setPostError(res.error));
+        console.log(res.error);
       }
       dispatch(setPostLoading(false));
     };

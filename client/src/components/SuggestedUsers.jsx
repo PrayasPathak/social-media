@@ -15,8 +15,6 @@ const SuggestedUsers = () => {
   const dispatch = useDispatch();
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-  console.log(users);
-
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);

@@ -15,6 +15,8 @@ import {
 } from "@/redux/commentSlice";
 import moment from "moment";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default function CommentDialog({ open, setOpen, selectedPost }) {
   const dispatch = useDispatch();
   const [text, setText] = useState("");
@@ -52,7 +54,7 @@ export default function CommentDialog({ open, setOpen, selectedPost }) {
         {/* Post preview */}
         <div className="mb-4">
           <img
-            src={selectedPost?.mediaUrl}
+            src={`${BASE_URL}${selectedPost?.mediaUrl}`}
             alt="post"
             className="w-full h-[300px] object-cover rounded-md"
           />
@@ -68,27 +70,34 @@ export default function CommentDialog({ open, setOpen, selectedPost }) {
           ) : comments.length === 0 ? (
             <p className="text-center text-muted-foreground">No comments yet</p>
           ) : (
-            comments.map((comment) => (
-              <div key={comment.id} className="flex items-start gap-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={comment?.user?.profileImage} />
-                  <AvatarFallback>
-                    {comment?.user?.username?.charAt(0)?.toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm font-medium">
-                    {comment?.user?.username}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {comment.content}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    {moment(comment?.createdAt).fromNow()}
-                  </p>
+            comments.map((comment) => {
+              const user = comment?.user;
+              const profileUrl = user?.profilePicture
+                ? `${BASE_URL}${user.profilePicture}`
+                : "";
+              console.log(comment);
+              return (
+                <div key={comment.id} className="flex items-start gap-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={profileUrl} />
+                    <AvatarFallback>
+                      {user?.fullName?.charAt(0)?.toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium">
+                      {user?.fullName || "Unknown"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {comment.content || "No content"}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {moment(comment?.createdAt).fromNow()}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 

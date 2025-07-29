@@ -4,7 +4,7 @@ import { parseApiError } from "../utils/errorHandler";
 export async function createComment(postId, content) {
   try {
     const response = await axiosInstance.post(`/comments/${postId}`, {
-      content,
+      text: content,
     });
     return { data: response.data };
   } catch (error) {

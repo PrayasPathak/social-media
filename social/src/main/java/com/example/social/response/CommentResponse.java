@@ -7,7 +7,7 @@ import java.time.Instant;
 public record CommentResponse(
         Long id,
         String content,
-        Long userId,
+        UserComment user,
         Long postId,
         Instant createdAt
 ) {
@@ -15,7 +15,11 @@ public record CommentResponse(
         return new CommentResponse(
                 comment.getId(),
                 comment.getText(),
-                comment.getUser().getId(),
+                UserComment.builder()
+                        .id(comment.getUser().getId())
+                        .fullName(comment.getUser().getFullName())
+                        .profilePicture(comment.getUser().getProfile().getProfilePicture())
+                        .build(),
                 comment.getPost().getId(),
                 comment.getCreatedAt()
         );
