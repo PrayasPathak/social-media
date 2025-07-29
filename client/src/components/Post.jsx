@@ -23,6 +23,7 @@ import {
   setPostLoading,
   updatePost,
 } from "@/redux/postSlice";
+import { deletePost as deletePostById } from "@/api/postService";
 
 import {
   followUserSuccess,
@@ -178,6 +179,28 @@ const Post = ({ post }) => {
     dispatch(setFollowLoading(false));
   };
 
+  // Delete post
+  const handleDeletePost = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this post?"
+    );
+    if (!confirmed) return;
+
+    try {
+      const res = await deletePostById(post.id);
+      if (res.error) {
+        throw new Error(res.error);
+      }
+
+      dispatch(deletePost(post.id));
+      toast.success("Post deleted");
+
+      setOpen(false);
+    } catch (err) {
+      toast.error(err.message || "Failed to delete post");
+    }
+  };
+
   if (!author)
     return <div className="text-gray-500 text-center my-4">Loading post…</div>;
 
@@ -216,7 +239,8 @@ const Post = ({ post }) => {
             {user.id === author.id && (
               <Button
                 variant="ghost"
-                onClick={() => dispatch(deletePost(post.id))}
+                className="hover:bg-red-600 hover:text-white cursor-pointer"
+                onClick={handleDeletePost}
               >
                 Delete
               </Button>

@@ -1,5 +1,6 @@
 import { getLikes } from "@/api/likeService";
 import { deletePost } from "@/api/postService";
+import { getUserById } from "@/api/userService";
 import {
   createCommentForPost,
   fetchCommentsForPost,
@@ -8,8 +9,6 @@ import { deletePost as deletePostFromStore } from "@/redux/postSlice";
 import { Heart, MessageCircle, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import axiosInstance from "@/api/axiosInstance"; // your axios instance
-import { getUserById } from "@/api/userService";
 
 function PostModal({ post, onClose }) {
   const dispatch = useDispatch();

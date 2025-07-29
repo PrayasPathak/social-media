@@ -12,6 +12,8 @@ const UserSearchDialog = ({ open, setOpen }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
   useEffect(() => {
     const fetchUsers = async () => {
       if (!searchQuery.trim()) {
@@ -81,7 +83,10 @@ const UserSearchDialog = ({ open, setOpen }) => {
                 className="cursor-pointer p-2 hover:bg-gray-100 rounded-md flex items-center gap-2"
               >
                 <Avatar className="w-6 h-6">
-                  <AvatarImage src={user.profilePicture} alt="profile" />
+                  <AvatarImage
+                    src={`${BASE_URL}${user.profilePicture}`}
+                    alt="profile"
+                  />
                   <AvatarFallback>
                     {user?.fullName?.charAt(0)?.toUpperCase() || "?"}
                   </AvatarFallback>

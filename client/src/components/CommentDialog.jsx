@@ -75,7 +75,6 @@ export default function CommentDialog({ open, setOpen, selectedPost }) {
               const profileUrl = user?.profilePicture
                 ? `${BASE_URL}${user.profilePicture}`
                 : "";
-              console.log(comment);
               return (
                 <div key={comment.id} className="flex items-start gap-2">
                   <Avatar className="h-8 w-8">
